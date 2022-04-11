@@ -6,7 +6,8 @@
   "scripts": {
     "test": "jest",
     "start": "node index.js",
-    "watch": "nodemon index.js"
+    "watch": "nodemon index.js",
+    "cluster": "pm2 start index.js -i max"
   },
   "author": "iahk151020",
   "license": "ISC",
@@ -20,6 +21,7 @@
     "csv-parse": "^5.0.4",
     "dotenv": "^16.0.0",
     "express": "^4.17.3",
-    "morgan": "^1.10.0"
+    "morgan": "^1.10.0",
+    "pm2": "^5.2.0"
   }
 }

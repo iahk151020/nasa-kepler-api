@@ -1,4 +1,6 @@
 const launches = new Map();
+const launchesDB =  require('./launches.mongo');
+const planets = require('./planets.mongo');
 let lastFlightNumber = 100;
 
 const launch = {
@@ -7,10 +9,12 @@ const launch = {
     rocket: 'ExO11',
     launchDate: new Date('December 27, 2030'),
     target: 'Kepler-442 b',
-    customer:['Khai' ,'Hoan'],
+    customers:['Khai' ,'Hoan'],
     upcoming: true,
     success: true
 };
+
+saveLaunch(launch);
 
 launches.set(launch.flightNumber, launch);
 
@@ -18,8 +22,8 @@ function launchIdExist(id){
     return launches.has(id);
 }
 
-function getAllLaunches(){
-    return Array.from(launches.values());
+async function getAllLaunches(){
+    return await launchesDB.find({}, {"_id": 0, "__v":0});
 }
 
 function addNewLaunch(launch){
@@ -29,8 +33,26 @@ function addNewLaunch(launch){
         launchDate: new Date(launch.launchDate),
         success: true,
         upcoming: true,
-        customer: ['ZTM', 'NASA']
+        customers: ['ZTM', 'NASA']
     }));
+}
+
+async function saveLaunch(launch){
+
+    const planet = await planets.findOne({
+        keplerName: launch.target
+    });
+
+    if (!planet){
+        throw new Error('Planet not found');
+    }
+
+    await launchesDB.updateOne({
+        flightNumber: launch.flightNumber
+    },
+    launch,{
+        upsert: true
+    });
 }
 
 function deleteLaunchById(id){
