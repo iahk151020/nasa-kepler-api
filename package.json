@@ -10,6 +10,9 @@
     "cluster": "pm2 start index.js -i max"
   },
   "author": "iahk151020",
+  "jest":{
+    "testEnvironment": "node"
+  },
   "license": "ISC",
   "devDependencies": {
     "jest": "^27.5.1",

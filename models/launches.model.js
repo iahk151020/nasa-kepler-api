@@ -1,7 +1,6 @@
 const launches = new Map();
 const launchesDB =  require('./launches.mongo');
 const planets = require('./planets.mongo');
-let lastFlightNumber = 100;
 
 const launch = {
     flightNumber: 100,
@@ -18,23 +17,33 @@ saveLaunch(launch);
 
 launches.set(launch.flightNumber, launch);
 
-function launchIdExist(id){
-    return launches.has(id);
+async function launchIdExist(id){
+    const flightExist = await launchesDB.findOne({flightNumber: id});
+    return !flightExist ? false : true;
 }
 
 async function getAllLaunches(){
     return await launchesDB.find({}, {"_id": 0, "__v":0});
 }
 
-function addNewLaunch(launch){
-    lastFlightNumber++;
-    launches.set(lastFlightNumber, Object.assign(launch, {
-        flightNumber: lastFlightNumber,
-        launchDate: new Date(launch.launchDate),
+async function getLatestFlightNumber(){
+    const latestLaunch = await launchesDB.findOne().sort({flightNumber : -1});
+
+    return !latestLaunch ? 100 : latestLaunch.flightNumber;
+}
+
+async function scheduleNewLaunch(launch){
+    
+    const newFlightNumber = await getLatestFlightNumber() + 1;
+
+    const newLaunch = Object.assign(launch, {
         success: true,
         upcoming: true,
-        customers: ['ZTM', 'NASA']
-    }));
+        customers: ['ZTM', 'NASA'],
+        flightNumber: newFlightNumber
+    })
+
+    await saveLaunch(newLaunch);
 }
 
 async function saveLaunch(launch){
@@ -47,25 +56,33 @@ async function saveLaunch(launch){
         throw new Error('Planet not found');
     }
 
-    await launchesDB.updateOne({
+    await launchesDB.findOneAndUpdate({
         flightNumber: launch.flightNumber
     },
-    launch,{
+    launch,
+    {
         upsert: true
     });
 }
 
-function deleteLaunchById(id){
-    const aborted = launches.get(id);
-    aborted.upcoming = false;
-    aborted.success = false;    
+async function deleteLaunchById(id){
+    try {
+        const aborted = await launchesDB.findOneAndUpdate({
+            flightNumber: id
+        }, {
+            success: false,
+            upcoming: false
+        })   
+    } catch (error) {
+        throw new Error('Launch not found');
+    }
     return aborted;
 }
 
 module.exports = {
     launchIdExist,
     getAllLaunches,
-    addNewLaunch,
-    deleteLaunchById
+    deleteLaunchById,
+    scheduleNewLaunch
 }
  
