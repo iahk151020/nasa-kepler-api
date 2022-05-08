@@ -1,7 +1,7 @@
 const router = require('express').Router();
 const { getAllLaunches, addNewLaunch, abortLaunch } = require('./launches.controller');
 
-router.get('/launches', getAllLaunches);
-router.post('/launches', addNewLaunch);
-router.delete('/launches/:id', abortLaunch);
+router.get('/', getAllLaunches);
+router.post('/', addNewLaunch);
+router.delete('/:id', abortLaunch);
 module.exports = router;

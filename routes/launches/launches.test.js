@@ -12,7 +12,7 @@ describe('Launch API', () => {
     describe('Test GET /launches', () => {
         test('It should respond with status 200', async() => {
             await request(app)
-                .get('/launches')
+                .get('/v1/launches')
                 .expect('Content-Type', /json/)
                 .expect(200);
             
@@ -21,7 +21,7 @@ describe('Launch API', () => {
     
     describe('Test POST /launches', () => {
         test('It should respond with status 201', async() => {
-           await request(app).post('/launches')
+           await request(app).post('/v1/launches')
            .send({
                 mission: 'test',
                 rocket: 'test',
@@ -32,13 +32,13 @@ describe('Launch API', () => {
         });
     
         test('It should catch missing required property', () => {
-             request(app).post('/launches')
+             request(app).post('/v1/launches')
             .send({})
             .expect(400)
         });
     
         test('It should catch invalid dates', () => {
-             request(app).post('/launches')
+             request(app).post('/v1/launches')
             .send({
                 mission: 'test',
                 rocket: 'test',

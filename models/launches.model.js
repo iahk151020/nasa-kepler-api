@@ -1,6 +1,9 @@
 const launches = new Map();
+const { default: axios } = require('axios');
 const launchesDB =  require('./launches.mongo');
 const planets = require('./planets.mongo');
+
+const SPACEX_API_LAUNCHES = "https://api.spacexdata.com/v4/launches/query";
 
 const launch = {
     flightNumber: 100,
@@ -17,13 +20,21 @@ saveLaunch(launch);
 
 launches.set(launch.flightNumber, launch);
 
+async function populateDB(){
+    
+}
+
 async function launchIdExist(id){
     const flightExist = await launchesDB.findOne({flightNumber: id});
     return !flightExist ? false : true;
 }
 
-async function getAllLaunches(){
-    return await launchesDB.find({}, {"_id": 0, "__v":0});
+async function getAllLaunches(limit, skip){
+    return await launchesDB
+    .find({}, {"_id": 0, "__v":0})
+    .sort({flightNumber:  1})
+    .skip(skip)
+    .limit(limit);
 }
 
 async function getLatestFlightNumber(){
@@ -79,10 +90,56 @@ async function deleteLaunchById(id){
     return aborted;
 }
 
+async function findLaunch(filter){
+    return await launchesDB.findOne(filter);
+}
+
+async function loadLaunches(){
+    console.log("Downloading launches data....");
+    const res = await axios.post(SPACEX_API_LAUNCHES, {
+            pagination: false,
+            query:{},
+            options:{
+                populate: [
+                    {
+                        path: "rocket",
+                        select: {
+                            name: 1
+                        }
+                    },
+                    {
+                        path: "payloads",
+                        select: {
+                            customers: 1
+                        }
+                    }
+                ]
+            }
+    })
+    
+    const data = await res.data.docs;
+    
+
+    for (const launchDoc of data){ 
+        const launch = {
+            flightNumber: launchDoc['flight_number'],
+            mission: launchDoc['name'],
+            rocket: launchDoc['rocket']['name'],
+            launchDate: launchDoc['data_local'],
+            upcoming: launchDoc['upcoming'],
+            success: launchDoc['success'],
+            customers: launchDoc['payloads'].map(payload => payload.customers)
+        }
+
+        console.log(`${launch.flightNumber} - ${launch.rocket}`);
+    }
+}
+
 module.exports = {
     launchIdExist,
     getAllLaunches,
     deleteLaunchById,
-    scheduleNewLaunch
+    scheduleNewLaunch,
+    loadLaunches
 }
  

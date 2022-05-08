@@ -10,7 +10,7 @@
     "cluster": "pm2 start index.js -i max"
   },
   "author": "iahk151020",
-  "jest":{
+  "jest": {
     "testEnvironment": "node"
   },
   "license": "ISC",
@@ -20,6 +20,7 @@
     "supertest": "^6.2.2"
   },
   "dependencies": {
+    "axios": "^0.26.1",
     "cors": "^2.8.5",
     "csv-parse": "^5.0.4",
     "dotenv": "^16.0.0",
