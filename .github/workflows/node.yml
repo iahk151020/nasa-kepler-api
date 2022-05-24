@@ -1,0 +1,30 @@
+name: NASA Project CI
+# control when workflow runs
+on: 
+  # define triggers
+  # when pushing code to branch master
+  push: 
+    branches: [master]
+  # when creating pull request from branch master
+  pull_request: 
+    branches: [master]
+
+#jobs is what supposed to run when either of above events is triggered
+jobs:
+  #by default, github run through build and deploy jobs in parallel
+  build: 
+    #define platform where job runs on
+    runs-on: ubuntu-latest
+    #reusable script helps us automate different things we might want to do in our job
+    steps: 
+      #uses -> use feature, commands available in github actions
+      - uses: actions/checkout@v2
+      - name: Using nodejs version 16
+      - uses: actions/setup-node@v2
+        with: 
+          node-version: '16'
+      #run -> our own commands defined in package.json
+      - run: npm install
+  deploy: 
+    #specify a job that must be done before doing deploy job
+    needs: build
