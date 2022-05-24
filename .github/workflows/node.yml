@@ -25,6 +25,6 @@ jobs:
           node-version: '16'
       #run -> our own commands defined in package.json
       - run: npm install
-  deploy: 
-    #specify a job that must be done before doing deploy job
-    needs: build
+  # deploy: 
+  #   #specify a job that must be done before doing deploy job
+  #   needs: build
